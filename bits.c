@@ -176,7 +176,7 @@ NOTES:
 int evenBits(void) {
   int x = 0X55, y;
   y = x | ( x << 8 );
-  return y | ( y << 8 );
+  return y | ( y << 16 );
 }
 /* 
  * isEqual - return 1 if x == y, and 0 otherwise 
@@ -213,11 +213,7 @@ int byteSwap(int x, int n, int m) {
  *   Rating: 3 
  */
 int rotateRight(int x, int n) {
-  int a, b, c;
-  a = x >> n;
-  b = x & ( 1 << n + ( ~ 0 ) );
-  c = ( b << ( 32 + ( ( ~ n ) + 1 ) ) );
-  return c | a;
+  return ((x >> n) & (~(1 << 31) >> (n + ~1 + 1))) | x <<(33 + ~n);
 }
 /* 
  * logicalNeg - implement the ! operator, using all of 
@@ -294,10 +290,10 @@ int satAdd(int x, int y) {
   ans = x + y;
   overflow = ( ( x ^ ans ) & ( y ^ ans ) ) >> 31;
   return ( ( ans >> ( overflow & 31 ) ) +  (overflow << 31 ) );
-  //½á¹ûÓÐÁ½ÖÖ,Òç³öÎª0xffffffff,²»Òç³öÎª0
-  //ÕýÕýÒç³ö,0xffffffff + 1 = 0x7fffffff
-  //¸º¸ºÒç³ö,0 + 0x80000000(0xffffffff << 31)
-  //²»Òç³ö,(ans >> 0) + (0 << 31)	
+  //ç»“æžœæœ‰ä¸¤ç§,æº¢å‡ºä¸º0xffffffff,ä¸æº¢å‡ºä¸º0
+  //æ­£æ­£æº¢å‡º,0xffffffff + 1 = 0x7fffffff
+  //è´Ÿè´Ÿæº¢å‡º,0 + 0x80000000(0xffffffff << 31)
+  //ä¸æº¢å‡º,(ans >> 0) + (0 << 31)	
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -372,11 +368,11 @@ unsigned float_half(unsigned uf) {
   unsigned s = uf & 0x80000000;
   unsigned exp = uf & 0x7f800000;
   unsigned frac = uf & 0x7FFFFF;
-  // °´ÕÕÏòÅ¼ÊýÉáÈëµÄ·½Ê½£¬Ö»ÓÐ×îµÍ2Î»ÎªÈ«1Ê±£¬²ÅÐèÒªÉáÈë
+  // æŒ‰ç…§å‘å¶æ•°èˆå…¥çš„æ–¹å¼ï¼Œåªæœ‰æœ€ä½Ž2ä½ä¸ºå…¨1æ—¶ï¼Œæ‰éœ€è¦èˆå…¥
   int round = ( ( uf & 3 ) == 3);
   if ( exp == 0x7f800000 )//When argument is NaN, return argument
     return uf;
-  else if ( exp > 0x800000 )//½×Êý´óÓÚÒ»£¬¼õÒ»¼´¿É£¬·ñÔòÐèÒª½øÐÐÉáÈë
+  else if ( exp > 0x800000 )//é˜¶æ•°å¤§äºŽä¸€ï¼Œå‡ä¸€å³å¯ï¼Œå¦åˆ™éœ€è¦è¿›è¡Œèˆå…¥
 	return uf - 0x800000;
   else
     return s | ( ( ( exp | frac ) >> 1 ) + round ); 
